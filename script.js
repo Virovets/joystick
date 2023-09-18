@@ -23,8 +23,8 @@ stick1.addEventListener('touchstart', (e) => {
     stick1.style.transition = '0s';
     const joystickRect1 = joystick1.getBoundingClientRect();
     const touch = e.touches[0];
-    joystickState1.initialPositionX = touch.clientX - joystickRect1.left - stick1.offsetWidth / 2;
-    joystickState1.initialPositionY = touch.clientY - joystickRect1.top - stick1.offsetHeight / 2;
+    joystickState1.initialPositionX = touch.clientX - joystickRect1.left;
+    joystickState1.initialPositionY = touch.clientY - joystickRect1.top;
     joystickState1.cursorOffsetX = stick1.offsetWidth / 2;
     joystickState1.cursorOffsetY = stick1.offsetHeight / 2;
 });
@@ -35,22 +35,22 @@ stick2.addEventListener('touchstart', (e) => {
     stick2.style.transition = '0s';
     const joystickRect2 = joystick2.getBoundingClientRect();
     const touch = e.touches[0];
-    joystickState2.initialPositionX = touch.clientX - joystickRect2.left - stick2.offsetWidth / 2;
-    joystickState2.initialPositionY = touch.clientY - joystickRect2.top - stick2.offsetHeight / 2;
+    joystickState2.initialPositionX = touch.clientX - joystickRect2.left;
+    joystickState2.initialPositionY = touch.clientY - joystickRect2.top;
     joystickState2.cursorOffsetX = stick2.offsetWidth / 2;
     joystickState2.cursorOffsetY = stick2.offsetHeight / 2;
 });
 
 document.addEventListener('touchmove', (e) => {
-    if (joystickState1.isActive) {
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1]; // Додаємо підтримку двох пальців
+    if (joystickState1.isActive && touch1) {
         const joystickRect1 = joystick1.getBoundingClientRect();
-        const touch = e.touches[0];
-        moveStick(touch, joystick1, stick1, joystickState1.cursorOffsetX, joystickState1.cursorOffsetY, joystickState1.initialPositionX, joystickState1.initialPositionY, '1');
+        moveStick(touch1, joystick1, stick1, joystickState1.cursorOffsetX, joystickState1.cursorOffsetY, joystickState1.initialPositionX, joystickState1.initialPositionY, '1');
     }
-    if (joystickState2.isActive) {
+    if (joystickState2.isActive && touch2) {
         const joystickRect2 = joystick2.getBoundingClientRect();
-        const touch = e.touches[0];
-        moveStick(touch, joystick2, stick2, joystickState2.cursorOffsetX, joystickState2.cursorOffsetY, joystickState2.initialPositionX, joystickState2.initialPositionY, '2');
+        moveStick(touch2, joystick2, stick2, joystickState2.cursorOffsetX, joystickState2.cursorOffsetY, joystickState2.initialPositionX, joystickState2.initialPositionY, '2');
     }
 });
 
