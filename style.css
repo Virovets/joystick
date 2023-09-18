@@ -4,13 +4,15 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: gray; /* Додано фоновий колір для виділення */
+    position: fixed;
+    width: 100vw;
+    background-color: gray;
 }
 
 .joysticks-wrapper {
     display: flex;
     justify-content: space-between;
-    width: 93%;
+    width: 87%;
     padding: 50px 20px;
     position: absolute;
     bottom: 0;
