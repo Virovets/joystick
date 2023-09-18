@@ -92,104 +92,89 @@
 //     document.getElementById('stick2x').innerHTML = '0';
 //     document.getElementById('stick2y').innerHTML = '0';
 // }
-
 class Joystick {
-    constructor(joystickElement, stickElement) {
-        this.joystickElement = joystickElement;
-        this.stickElement = stickElement;
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
         this.isActive = false;
         this.initialPositionX = 0;
         this.initialPositionY = 0;
         this.cursorOffsetX = 0;
         this.cursorOffsetY = 0;
-        this.stickNumber = stickElement.dataset.stickNumber;
+        this.stickRadius = 30; // Розмір джойстика
 
-        stickElement.addEventListener('touchstart', (e) => this.onTouchStart(e));
-        stickElement.addEventListener('touchmove', (e) => this.onTouchMove(e));
-        stickElement.addEventListener('touchend', () => this.onTouchEnd());
+        canvas.addEventListener('touchstart', (e) => this.onTouchStart(e));
+        canvas.addEventListener('touchmove', (e) => this.onTouchMove(e));
+        canvas.addEventListener('touchend', () => this.onTouchEnd());
+        this.resetStickPosition();
     }
 
     onTouchStart(e) {
         e.preventDefault();
         this.isActive = true;
-        this.stickElement.style.transition = '0s';
-        const joystickRect = this.joystickElement.getBoundingClientRect();
         const touch = e.touches[0];
-        this.initialPositionX = touch.clientX - joystickRect.left - this.stickElement.offsetWidth / 2;
-        this.initialPositionY = touch.clientY - joystickRect.top - this.stickElement.offsetHeight / 2;
-        this.cursorOffsetX = this.stickElement.offsetWidth / 2;
-        this.cursorOffsetY = this.stickElement.offsetHeight / 2;
+        this.initialPositionX = touch.clientX - this.canvas.getBoundingClientRect().left;
+        this.initialPositionY = touch.clientY - this.canvas.getBoundingClientRect().top;
+        this.cursorOffsetX = this.stickRadius;
+        this.cursorOffsetY = this.stickRadius;
     }
 
     onTouchMove(e) {
-        console.log(this.joystickElement)
-        console.log(e)
         if (this.isActive) {
             const touch = e.touches[0];
-            const joystickRect = this.joystickElement.getBoundingClientRect();
             this.moveStick(
-                touch,
-                joystickRect,
-                this.stickElement,
-                this.cursorOffsetX,
-                this.cursorOffsetY,
-                this.initialPositionX,
-                this.initialPositionY,
-                this.stickNumber
+                touch.clientX - this.canvas.getBoundingClientRect().left,
+                touch.clientY - this.canvas.getBoundingClientRect().top
             );
         }
     }
 
     onTouchEnd() {
         this.isActive = false;
-        this.stickElement.style.transition = '0.2s';
-        this.resetStickPosition(this.stickElement, this.stickNumber);
+        this.resetStickPosition();
     }
 
-    moveStick(touch, joystick, stick, cursorOffsetX, cursorOffsetY, initialPositionX, initialPositionY, stickNumber) {
-        const x = touch.clientX - joystick.left - cursorOffsetX - initialPositionX;
-        const y = touch.clientY - joystick.top - cursorOffsetY - initialPositionY;
+    moveStick(x, y) {
+        const maxDistance = this.canvas.width / 2 - this.stickRadius;
+        const distance = Math.sqrt((x - this.canvas.width / 2) ** 2 + (y - this.canvas.height / 2) ** 2);
 
-        const stickRadius = stick.offsetWidth / 2;
-        const maxDistance = joystick.width / 2 - stickRadius + 30;
-
-        const distance = Math.sqrt(x * x + y * y);
         if (distance <= maxDistance) {
-            stick.style.transform = `translate(${x - 32}px, ${y - 32}px)`;
+            this.clearCanvas();
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, this.stickRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'blue';
+            this.ctx.fill();
+            this.ctx.closePath();
         } else {
-            const angle = Math.atan2(y, x);
-            const newX = Math.cos(angle) * maxDistance;
-            const newY = Math.sin(angle) * maxDistance;
-            stick.style.transform = `translate(${newX - 32}px, ${newY - 32}px)`;
-        }
+            const angle = Math.atan2(y - this.canvas.height / 2, x - this.canvas.width / 2);
+            const newX = Math.cos(angle) * maxDistance + this.canvas.width / 2;
+            const newY = Math.sin(angle) * maxDistance + this.canvas.height / 2;
 
-        switch (stickNumber) {
-            case '1':
-                document.getElementById('stick1x').innerHTML = x + '';
-                document.getElementById('stick1y').innerHTML = y + '';
-                break;
-            case '2':
-                document.getElementById('stick2x').innerHTML = x + '';
-                document.getElementById('stick2y').innerHTML = y + '';
-                break;
+            this.clearCanvas();
+            this.ctx.beginPath();
+            this.ctx.arc(newX, newY, this.stickRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'blue';
+            this.ctx.fill();
+            this.ctx.closePath();
         }
     }
 
-    resetStickPosition(stick, stickNumber) {
-        stick.style.transform = 'translate(-50%, -50%)';
+    resetStickPosition() {
+        this.clearCanvas();
+        this.ctx.beginPath();
+        this.ctx.arc(this.canvas.width / 2, this.canvas.height / 2, this.stickRadius, 0, Math.PI * 2);
+        this.ctx.fillStyle = 'blue';
+        this.ctx.fill();
+        this.ctx.closePath();
+    }
 
-        switch (stickNumber) {
-            case '1':
-                document.getElementById('stick1x').innerHTML = '0';
-                document.getElementById('stick1y').innerHTML = '0';
-                break;
-            case '2':
-                document.getElementById('stick2x').innerHTML = '0';
-                document.getElementById('stick2y').innerHTML = '0';
-                break;
-        }
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
-const joystick1 = new Joystick(document.getElementById('joystick1'), document.getElementById('stick1'));
-const joystick2 = new Joystick(document.getElementById('joystick2'), document.getElementById('stick2'));
+const joystick1Canvas = document.getElementById('joystick1');
+const joystick2Canvas = document.getElementById('joystick2');
+
+const joystick1 = new Joystick(joystick1Canvas);
+const joystick2 = new Joystick(joystick2Canvas);
