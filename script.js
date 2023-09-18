@@ -43,7 +43,8 @@ stick2.addEventListener('touchstart', (e) => {
 
 document.addEventListener('touchmove', (e) => {
     const touch1 = e.touches[0];
-    const touch2 = e.touches[1]; // Додаємо підтримку двох пальців
+    const touch2 = e.touches[1];
+
     if (joystickState1.isActive && touch1) {
         const joystickRect1 = joystick1.getBoundingClientRect();
         moveStick(touch1, joystick1, stick1, joystickState1.cursorOffsetX, joystickState1.cursorOffsetY, joystickState1.initialPositionX, joystickState1.initialPositionY, '1');
@@ -54,7 +55,7 @@ document.addEventListener('touchmove', (e) => {
     }
 });
 
-document.addEventListener('touchend', () => {
+document.addEventListener('touchend', (e) => {
     joystickState1.isActive = false;
     stick1.style.transition = '0.2s';
     resetStickPosition(stick1, '1');
