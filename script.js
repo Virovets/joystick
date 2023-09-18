@@ -95,6 +95,7 @@ let isJoystickActive2 = false;
 let initialPositionX2, initialPositionY2, cursorOffsetX2, cursorOffsetY2;
 
 stick1.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Зупиняємо подальшу обробку події браузером
     isJoystickActive1 = true;
     stick1.style.transition = '0s';
     const joystickRect1 = joystick1.getBoundingClientRect();
@@ -106,6 +107,7 @@ stick1.addEventListener('touchstart', (e) => {
 });
 
 stick2.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Зупиняємо подальшу обробку події браузером
     isJoystickActive2 = true;
     stick2.style.transition = '0s';
     const joystickRect2 = joystick2.getBoundingClientRect();
