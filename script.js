@@ -1,56 +1,53 @@
-function createJoystick(joystickElement, stickElement) {
-    let joystickState = {
-        isActive: false,
-        initialPositionX: 0,
-        initialPositionY: 0,
-        cursorOffsetX: 0,
-        cursorOffsetY: 0,
-    };
+class Joystick {
+    constructor(joystickElement, stickElement) {
+        this.joystickElement = joystickElement;
+        this.stickElement = stickElement;
+        this.isActive = false;
+        this.initialPositionX = 0;
+        this.initialPositionY = 0;
+        this.cursorOffsetX = 0;
+        this.cursorOffsetY = 0;
 
-    stickElement.addEventListener('touchstart', (e) => {
+        this.stickElement.addEventListener('touchstart', (e) => this.onTouchStart(e));
+        document.addEventListener('touchmove', (e) => this.onTouchMove(e));
+        document.addEventListener('touchend', () => this.onTouchEnd());
+    }
+
+    onTouchStart(e) {
         e.preventDefault();
-        joystickState.isActive = true;
-        stickElement.style.transition = '0s';
-        const joystickRect = joystickElement.getBoundingClientRect();
+        this.isActive = true;
+        this.stickElement.style.transition = '0s';
+        const joystickRect = this.joystickElement.getBoundingClientRect();
         const touch = e.touches[0];
-        joystickState.initialPositionX = touch.clientX - joystickRect.left;
-        joystickState.initialPositionY = touch.clientY - joystickRect.top;
-        joystickState.cursorOffsetX = stickElement.offsetWidth / 2;
-        joystickState.cursorOffsetY = stickElement.offsetHeight / 2;
-    });
+        this.initialPositionX = touch.clientX - joystickRect.left;
+        this.initialPositionY = touch.clientY - joystickRect.top;
+        this.cursorOffsetX = this.stickElement.offsetWidth / 2;
+        this.cursorOffsetY = this.stickElement.offsetHeight / 2;
+    }
 
-    document.addEventListener('touchmove', (e) => {
-        if (joystickState.isActive) {
+    onTouchMove(e) {
+        if (this.isActive) {
             const touch = e.touches[0];
-            const joystickRect = joystickElement.getBoundingClientRect();
-            moveStick(
+            const joystickRect = this.joystickElement.getBoundingClientRect();
+            this.moveStick(
                 touch,
-                joystickElement,
-                stickElement,
-                joystickState.cursorOffsetX,
-                joystickState.cursorOffsetY,
-                joystickState.initialPositionX,
-                joystickState.initialPositionY
+                joystickRect,
+                this.stickElement,
+                this.cursorOffsetX,
+                this.cursorOffsetY,
+                this.initialPositionX,
+                this.initialPositionY
             );
         }
-    });
+    }
 
-    document.addEventListener('touchend', () => {
-        joystickState.isActive = false;
-        stickElement.style.transition = '0.2s';
-        resetStickPosition(stickElement);
-    });
+    onTouchEnd() {
+        this.isActive = false;
+        this.stickElement.style.transition = '0.2s';
+        this.resetStickPosition(this.stickElement);
+    }
 
-    function moveStick(
-        touch,
-        joystickElement,
-        stickElement,
-        cursorOffsetX,
-        cursorOffsetY,
-        initialPositionX,
-        initialPositionY
-    ) {
-        const joystickRect = joystickElement.getBoundingClientRect();
+    moveStick(touch, joystickRect, stickElement, cursorOffsetX, cursorOffsetY, initialPositionX, initialPositionY) {
         const x = touch.clientX - joystickRect.left - cursorOffsetX - initialPositionX;
         const y = touch.clientY - joystickRect.top - cursorOffsetY - initialPositionY;
 
@@ -68,15 +65,10 @@ function createJoystick(joystickElement, stickElement) {
         }
     }
 
-    function resetStickPosition(stickElement) {
+    resetStickPosition(stickElement) {
         stickElement.style.transform = 'translate(-50%, -50%)';
     }
 }
 
-const joystick1 = document.getElementById('joystick1');
-const stick1 = document.getElementById('stick1');
-createJoystick(joystick1, stick1);
-
-const joystick2 = document.getElementById('joystick2');
-const stick2 = document.getElementById('stick2');
-createJoystick(joystick2, stick2);
+const joystick1 = new Joystick(document.getElementById('joystick1'), document.getElementById('stick1'));
+const joystick2 = new Joystick(document.getElementById('joystick2'), document.getElementById('stick2'));
