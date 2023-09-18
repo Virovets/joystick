@@ -93,43 +93,63 @@
 //     document.getElementById('stick2y').innerHTML = '0';
 // }
 
-function createJoystick(joystickElement, stickElement, stickNumber) {
-    let isJoystickActive = false;
-    let initialPositionX, initialPositionY, cursorOffsetX, cursorOffsetY;
+class Joystick {
+    constructor(joystickElement, stickElement) {
+        this.joystickElement = joystickElement;
+        this.stickElement = stickElement;
+        this.isActive = false;
+        this.initialPositionX = 0;
+        this.initialPositionY = 0;
+        this.cursorOffsetX = 0;
+        this.cursorOffsetY = 0;
+        this.stickNumber = stickElement.dataset.stickNumber;
 
-    stickElement.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // Зупиняємо подальшу обробку події браузером
-        isJoystickActive = true;
-        stickElement.style.transition = '0s';
-        const joystickRect = joystickElement.getBoundingClientRect();
+        stickElement.addEventListener('touchstart', (e) => this.onTouchStart(e));
+        document.addEventListener('touchmove', (e) => this.onTouchMove(e));
+        document.addEventListener('touchend', () => this.onTouchEnd());
+    }
+
+    onTouchStart(e) {
+        e.preventDefault();
+        this.isActive = true;
+        this.stickElement.style.transition = '0s';
+        const joystickRect = this.joystickElement.getBoundingClientRect();
         const touch = e.touches[0];
-        initialPositionX = touch.clientX - joystickRect.left - stickElement.offsetWidth / 2;
-        initialPositionY = touch.clientY - joystickRect.top - stickElement.offsetHeight / 2;
-        cursorOffsetX = stickElement.offsetWidth / 2;
-        cursorOffsetY = stickElement.offsetHeight / 2;
-    });
+        this.initialPositionX = touch.clientX - joystickRect.left - this.stickElement.offsetWidth / 2;
+        this.initialPositionY = touch.clientY - joystickRect.top - this.stickElement.offsetHeight / 2;
+        this.cursorOffsetX = this.stickElement.offsetWidth / 2;
+        this.cursorOffsetY = this.stickElement.offsetHeight / 2;
+    }
 
-    document.addEventListener('touchmove', (e) => {
-        if (isJoystickActive) {
-            const joystickRect = joystickElement.getBoundingClientRect();
+    onTouchMove(e) {
+        if (this.isActive) {
             const touch = e.touches[0];
-            moveStick(touch, joystickElement, stickElement, cursorOffsetX, cursorOffsetY, initialPositionX, initialPositionY, stickNumber);
+            const joystickRect = this.joystickElement.getBoundingClientRect();
+            this.moveStick(
+                touch,
+                joystickRect,
+                this.stickElement,
+                this.cursorOffsetX,
+                this.cursorOffsetY,
+                this.initialPositionX,
+                this.initialPositionY,
+                this.stickNumber
+            );
         }
-    });
+    }
 
-    document.addEventListener('touchend', () => {
-        isJoystickActive = false;
-        stickElement.style.transition = '0.2s';
-        resetStickPosition(stickElement, stickNumber);
-    });
+    onTouchEnd() {
+        this.isActive = false;
+        this.stickElement.style.transition = '0.2s';
+        this.resetStickPosition(this.stickElement, this.stickNumber);
+    }
 
-    function moveStick(touch, joystick, stick, cursorOffsetX, cursorOffsetY, initialPositionX, initialPositionY, stickNumber) {
-        const joystickRect = joystick.getBoundingClientRect();
-        const x = touch.clientX - joystickRect.left - cursorOffsetX - initialPositionX;
-        const y = touch.clientY - joystickRect.top - cursorOffsetY - initialPositionY;
+    moveStick(touch, joystick, stick, cursorOffsetX, cursorOffsetY, initialPositionX, initialPositionY, stickNumber) {
+        const x = touch.clientX - joystick.left - cursorOffsetX - initialPositionX;
+        const y = touch.clientY - joystick.top - cursorOffsetY - initialPositionY;
 
         const stickRadius = stick.offsetWidth / 2;
-        const maxDistance = joystickRect.width / 2 - stickRadius + 30;
+        const maxDistance = joystick.width / 2 - stickRadius + 30;
 
         const distance = Math.sqrt(x * x + y * y);
         if (distance <= maxDistance) {
@@ -153,7 +173,7 @@ function createJoystick(joystickElement, stickElement, stickNumber) {
         }
     }
 
-    function resetStickPosition(stick, stickNumber) {
+    resetStickPosition(stick, stickNumber) {
         stick.style.transform = 'translate(-50%, -50%)';
 
         switch (stickNumber) {
@@ -169,10 +189,5 @@ function createJoystick(joystickElement, stickElement, stickNumber) {
     }
 }
 
-const joystick1 = document.getElementById('joystick1');
-const stick1 = document.getElementById('stick1');
-createJoystick(joystick1, stick1, '1');
-
-const joystick2 = document.getElementById('joystick2');
-const stick2 = document.getElementById('stick2');
-createJoystick(joystick2, stick2, '2');
+const joystick1 = new Joystick(document.getElementById('joystick1'), document.getElementById('stick1'));
+const joystick2 = new Joystick(document.getElementById('joystick2'), document.getElementById('stick2'));
