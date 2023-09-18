@@ -1,60 +1,58 @@
 const joystick1 = document.getElementById('joystick1');
 const joystick2 = document.getElementById('joystick2');
-let joystick1Active = false;
-let joystick2Active = false;
+const touches = {};
 
 joystick1.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    joystick1Active = true;
-    moveJoystick1(e.touches[0]);
+    const touch = e.touches[0];
+    touches[touch.identifier] = {
+        element: joystick1,
+        offsetX: touch.clientX - joystick1.getBoundingClientRect().left,
+        offsetY: touch.clientY - joystick1.getBoundingClientRect().top,
+    };
 });
 
 joystick2.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    joystick2Active = true;
-    moveJoystick2(e.touches[0]);
+    const touch = e.touches[0];
+    touches[touch.identifier] = {
+        element: joystick2,
+        offsetX: touch.clientX - joystick2.getBoundingClientRect().left,
+        offsetY: touch.clientY - joystick2.getBoundingClientRect().top,
+    };
 });
 
 document.addEventListener('touchmove', (e) => {
-    if (joystick1Active) {
-        moveJoystick1(e.touches[0]);
-    }
-    if (joystick2Active) {
-        moveJoystick2(e.touches[0]);
+    for (const touch of e.changedTouches) {
+        const joystickData = touches[touch.identifier];
+        if (joystickData) {
+            moveJoystick(joystickData.element, touch.clientX - joystickData.offsetX, touch.clientY - joystickData.offsetY);
+        }
     }
 });
 
-document.addEventListener('touchend', () => {
-    joystick1Active = false;
-    joystick2Active = false;
-    resetJoysticks();
+document.addEventListener('touchend', (e) => {
+    for (const touch of e.changedTouches) {
+        const joystickData = touches[touch.identifier];
+        if (joystickData) {
+            delete touches[touch.identifier];
+            resetJoystick(joystickData.element);
+        }
+    }
 });
 
-function moveJoystick1(touch) {
-    const rect = joystick1.getBoundingClientRect();
+function moveJoystick(joystick, x, y) {
+    const rect = joystick.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
-    const distance = Math.min(rect.width / 2, Math.hypot(touch.clientX - centerX, touch.clientY - centerY));
+    const angle = Math.atan2(y - centerY, x - centerX);
+    const distance = Math.min(rect.width / 2, Math.hypot(x - centerX, y - centerY));
 
-    const stick = joystick1.querySelector('.stick');
+    const stick = joystick.querySelector('.stick');
     stick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
 }
 
-function moveJoystick2(touch) {
-    const rect = joystick2.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
-    const distance = Math.min(rect.width / 2, Math.hypot(touch.clientX - centerX, touch.clientY - centerY));
-
-    const stick = joystick2.querySelector('.stick');
-    stick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
-}
-
-function resetJoysticks() {
-    const sticks = document.querySelectorAll('.stick');
-    sticks.forEach(stick => {
-        stick.style.transform = 'translate(-50%, -50%)';
-    });
+function resetJoystick(joystick) {
+    const stick = joystick.querySelector('.stick');
+    stick.style.transform = 'translate(-50%, -50%)';
 }
